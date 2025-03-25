@@ -1,0 +1,232 @@
+{% extends 'blog/base.html' %}
+
+{% block title %}All bloggers{% endblock %}
+
+{% block content %}
+<style>
+    :root {
+        --primary-color: #2d3436;
+        --primary-hover: #353b3d;
+        --accent-color: #b19072;
+        --text-color: #2d3436;
+        --bg-color: #f5f0eb;
+    }
+
+    .blogger-section {
+        padding: 1rem 0;
+    }
+
+    .section-title {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: #2C3639;
+        margin-bottom: 1.5rem;
+        text-align: center;
+        letter-spacing: -0.02em;
+    }
+
+    .section-title span {
+        position: relative;
+        display: inline-block;
+    }
+
+    .section-title span::after {
+        content: '';
+        position: absolute;
+        bottom: -6px;
+        left: 0;
+        width: 100%;
+        height: 2px;
+        background: linear-gradient(to right, #e9ecef 0%, #6c757d 50%, #e9ecef 100%);
+        border-radius: 1px;
+    }
+
+    .blogger-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: 1rem;
+        padding: 0.5rem 0;
+    }
+
+    .blogger-card {
+        background: #fff;
+        border-radius: 10px;
+        overflow: hidden;
+        transition: all 0.3s ease;
+        border: 1px solid #e9ecef;
+        position: relative;
+    }
+
+    .blogger-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+    }
+
+    .blogger-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 60px;
+        background: linear-gradient(45deg, #f8f9fa, #e9ecef);
+        z-index: 1;
+    }
+
+    .blogger-header {
+        position: relative;
+        padding: 1rem;
+        text-align: center;
+        z-index: 2;
+    }
+
+    .blogger-avatar {
+        width: 70px;
+        height: 70px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 3px solid #fff;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        margin-bottom: 0.75rem;
+        transition: all 0.3s ease;
+    }
+
+    .blogger-card:hover .blogger-avatar {
+        transform: scale(1.05);
+    }
+
+    .blogger-name {
+        font-size: 1rem;
+        font-weight: 600;
+        color: #2C3639;
+        margin-bottom: 0.5rem;
+        transition: all 0.3s ease;
+    }
+
+    .blogger-card:hover .blogger-name {
+        color: var(--accent-color);
+    }
+
+    .blogger-stats {
+        display: flex;
+        justify-content: center;
+        gap: 0.75rem;
+        margin-bottom: 0.75rem;
+        font-size: 0.75rem;
+        color: #6c757d;
+    }
+
+    .stat-item {
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+
+    .stat-item i {
+        font-size: 0.875rem;
+        opacity: 0.7;
+    }
+
+    .blogger-bio {
+        padding: 0 1rem 1rem;
+        font-size: 0.75rem;
+        color: #6c757d;
+        text-align: center;
+        line-height: 1.4;
+    }
+
+    .view-profile-btn {
+        display: block;
+        text-align: center;
+        padding: 0.5rem;
+        background: #f8f9fa;
+        color: #2C3639;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        font-weight: 500;
+        font-size: 0.75rem;
+    }
+
+    .view-profile-btn:hover {
+        background: var(--bg-color);
+        color: var(--accent-color);
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 2rem;
+        background: #f8f9fa;
+        border-radius: 10px;
+        margin: 1.5rem 0;
+    }
+
+    .empty-state i {
+        font-size: 2rem;
+        color: #6c757d;
+        margin-bottom: 0.75rem;
+        opacity: 0.5;
+    }
+
+    .empty-state p {
+        font-size: 0.875rem;
+        color: #6c757d;
+        margin-bottom: 0;
+    }
+
+    @media (max-width: 768px) {
+        .blogger-grid {
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 0.75rem;
+        }
+
+        .section-title {
+            font-size: 1.25rem;
+            margin-bottom: 1rem;
+        }
+    }
+</style>
+
+<div class="container blogger-section">
+    <h1 class="section-title"><span>Our Bloggers Community</span></h1>
+
+    {% if bloggers %}
+    <div class="blogger-grid">
+        {% for blogger in bloggers %}
+        <div class="blogger-card">
+            <div class="blogger-header">
+                <img src="{{ blogger.profile.profile_pic.url }}" 
+                     alt="{{ blogger.username }}" 
+                     class="blogger-avatar">
+                <h2 class="blogger-name">{{ blogger.username }}</h2>
+                <div class="blogger-stats">
+                    <div class="stat-item">
+                        <i class="fas fa-pen-nib"></i>
+                        <span>{{ blogger.blog_posts.count }}</span>
+                    </div>
+                    <div class="stat-item">
+                        <i class="fas fa-comment"></i>
+                        <span>{{ blogger.comments.count }}</span>
+                    </div>
+                </div>
+            </div>
+            <div class="blogger-bio">
+                {% if blogger.profile.bio %}
+                    {{ blogger.profile.bio|truncatechars:80 }}
+                {% else %}
+                    A passionate member of our community.
+                {% endif %}
+            </div>
+            <a href="{% url 'blog:blogger_detail' blogger.pk %}" class="view-profile-btn">
+                <i class="fas fa-user me-1"></i>View
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <i class="fas fa-users"></i>
+        <p>No bloggers have joined yet.</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %} 

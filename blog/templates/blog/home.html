@@ -1,0 +1,188 @@
+{% extends "blog/base.html" %}
+
+{% block title %}Welcome to DIY Blog{% endblock %}
+
+{% block content %}
+<style>
+    .welcome-section {
+        position: relative;
+        padding: 4rem;
+        margin-bottom: 4rem;
+        background: linear-gradient(135deg, #2C3639 0%, #3F4E4F 100%);
+        border-radius: 30px;
+        overflow: hidden;
+        color: white;
+    }
+
+    .welcome-section::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('data:image/svg+xml,<svg width="20" height="20" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><rect width="1" height="1" fill="rgba(255,255,255,0.05)"/></svg>');
+        opacity: 0.1;
+    }
+
+    .welcome-title {
+        font-size: 4rem;
+        font-weight: 800;
+        color: white;
+        margin-bottom: 1.5rem;
+        font-family: 'Playfair Display', serif;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        position: relative;
+    }
+
+    .welcome-subtitle {
+        font-size: 1.4rem;
+        color: rgba(255,255,255,0.9);
+        margin-bottom: 3rem;
+        max-width: 600px;
+        line-height: 1.6;
+    }
+
+    .features-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 2rem;
+        margin-top: 3rem;
+    }
+
+    .feature-card {
+        text-align: left;
+        padding: 2rem;
+        background: rgba(255,255,255,0.1);
+        backdrop-filter: blur(10px);
+        border-radius: 20px;
+        transition: all 0.4s ease;
+        border: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .feature-card:hover {
+        transform: translateY(-10px);
+        background: rgba(255,255,255,0.15);
+        box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    }
+
+    .feature-title {
+        font-size: 1.8rem;
+        color: white;
+        margin-bottom: 1rem;
+        font-weight: 600;
+    }
+
+    .feature-text {
+        color: rgba(255,255,255,0.8);
+        margin-bottom: 1.5rem;
+        line-height: 1.6;
+    }
+
+    .feature-button {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.8rem 1.8rem;
+        background: rgba(255,255,255,0.1);
+        border: 2px solid rgba(255,255,255,0.2);
+        color: white;
+        border-radius: 30px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        backdrop-filter: blur(5px);
+    }
+
+    .feature-button:hover {
+        background: rgba(255,255,255,0.2);
+        border-color: rgba(255,255,255,0.3);
+        transform: translateX(5px);
+        color: white;
+    }
+
+    .feature-button i {
+        margin-left: 0.8rem;
+        transition: transform 0.3s ease;
+    }
+
+    .feature-button:hover i {
+        transform: translateX(5px);
+    }
+
+    @media (max-width: 768px) {
+        .features-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .welcome-title {
+            font-size: 2.8rem;
+        }
+
+        .welcome-section {
+            padding: 2rem;
+        }
+    }
+</style>
+
+<div class="welcome-section">
+    <h1 class="welcome-title">Welcome to DIY Blog</h1>
+    <p class="welcome-subtitle">Share your thoughts, connect with others, and explore amazing content in our creative community.</p>
+
+    <div class="features-grid">
+        <!-- Latest Posts -->
+        <div class="feature-card">
+            <h2 class="feature-title">Latest Posts</h2>
+            <p class="feature-text">Explore our most recent blog posts from various authors and discover new perspectives.</p>
+            <a href="{% url 'blog:all_blogs' %}" class="feature-button">
+                View All Posts <i class="fas fa-arrow-right"></i>
+            </a>
+        </div>
+
+        <!-- Our Bloggers -->
+        <div class="feature-card">
+            <h2 class="feature-title">Our Bloggers</h2>
+            <p class="feature-text">Meet our talented community of writers and content creators who share their unique stories.</p>
+            <a href="{% url 'blog:blogger_list' %}" class="feature-button">
+                Meet Bloggers <i class="fas fa-arrow-right"></i>
+            </a>
+        </div>
+
+        <!-- Welcome Section -->
+        <div class="feature-card">
+            <h2 class="feature-title">Welcome, {{ user.username }}!</h2>
+            <p class="feature-text">Ready to share your thoughts? Create a new post or manage your existing content.</p>
+            <a href="{% url 'blog:post_create' %}" class="feature-button">
+                Create New Post <i class="fas fa-arrow-right"></i>
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Latest Blog Posts Section -->
+<div class="mt-5">
+    <h2 class="mb-4">Latest Blog Posts</h2>
+    {% if latest_posts %}
+        <div class="row">
+            {% for post in latest_posts %}
+                <div class="col-md-6 mb-4">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <h3 class="card-title h5">{{ post.title }}</h3>
+                            <h6 class="card-subtitle mb-2 text-muted">By {{ post.author.username }}</h6>
+                            <p class="card-text">{{ post.content|truncatewords:30 }}</p>
+                            <a href="{% url 'blog:post_detail' post.pk %}" class="btn btn-outline-primary btn-sm">Read More</a>
+                        </div>
+                        <div class="card-footer text-muted">
+                            Posted on {{ post.post_date|date:"F j, Y" }}
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="alert alert-info">
+            No posts available yet.
+        </div>
+    {% endif %}
+</div>
+{% endblock %} 

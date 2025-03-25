@@ -1,0 +1,232 @@
+{% extends "blog/base.html" %}
+
+{% block title %}Welcome to DIY Blog{% endblock %}
+
+{% block content %}
+<style>
+    :root {
+        --gradient-start: #2d3436;
+        --gradient-end: #3F4E4F;
+        --accent: #b19072;
+        --text-light: rgba(255, 255, 255, 0.95);
+    }
+
+    .welcome-wrapper {
+        position: relative;
+        background: linear-gradient(135deg, var(--gradient-start) 0%, var(--gradient-end) 100%);
+        padding: 1.5rem 0 3rem;
+        margin-bottom: 0;
+        overflow: hidden;
+    }
+
+    .welcome-wrapper::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 100%;
+        background: radial-gradient(circle at 20% 150%, rgba(177, 144, 114, 0.15) 0%, transparent 50%),
+                    radial-gradient(circle at 80% -50%, rgba(177, 144, 114, 0.15) 0%, transparent 50%);
+        pointer-events: none;
+    }
+
+    .welcome-wrapper::after {
+        content: '';
+        position: absolute;
+        bottom: -2px;
+        left: -5%;
+        right: -5%;
+        height: 35px;
+        background: #fff;
+        border-radius: 50% 50% 0 0;
+        transform: scale(1.1);
+        box-shadow: 0 -5px 15px rgba(0,0,0,0.1);
+    }
+
+    .welcome-content {
+        position: relative;
+        z-index: 2;
+        text-align: center;
+        max-width: 500px;
+        margin: 0 auto;
+        padding: 0 1rem;
+        animation: fadeInUp 0.8s ease-out;
+    }
+
+    .welcome-title {
+        font-size: 2rem;
+        font-weight: 800;
+        color: var(--text-light);
+        margin-bottom: 0.5rem;
+        font-family: 'Playfair Display', serif;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        letter-spacing: -0.5px;
+    }
+
+    .welcome-description {
+        font-size: 0.9rem;
+        color: var(--text-light);
+        margin-bottom: 1rem;
+        line-height: 1.4;
+        font-weight: 300;
+    }
+
+    .features-section {
+        position: relative;
+        z-index: 1;
+        margin-top: -1rem;
+        background: #fff;
+        padding: 1.5rem 0 2rem;
+    }
+
+    .feature-card {
+        padding: 1.25rem;
+        text-align: center;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        background: #fff;
+        border-radius: 8px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .feature-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: linear-gradient(to right, var(--accent), var(--gradient-end));
+        transform: scaleX(0);
+        transition: transform 0.3s ease;
+    }
+
+    .feature-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .feature-card:hover::before {
+        transform: scaleX(1);
+    }
+
+    .feature-title {
+        font-size: 1.1rem;
+        margin-bottom: 0.5rem;
+        color: var(--gradient-start);
+        font-weight: 600;
+        position: relative;
+        display: inline-block;
+    }
+
+    .feature-text {
+        font-size: 0.85rem;
+        margin-bottom: 1rem;
+        color: #666;
+        line-height: 1.5;
+    }
+
+    .btn-outline-primary {
+        padding: 0.4rem 1rem;
+        font-size: 0.85rem;
+        border: 1px solid var(--accent);
+        color: var(--accent);
+        border-radius: 4px;
+        transition: all 0.3s ease;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .btn-outline-primary:hover {
+        color: #fff;
+        background: var(--accent);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(177, 144, 114, 0.2);
+    }
+
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @media (max-width: 768px) {
+        .welcome-title {
+            font-size: 1.75rem;
+        }
+        
+        .welcome-description {
+            font-size: 0.85rem;
+        }
+        
+        .welcome-wrapper {
+            padding: 1.5rem 0 2.5rem;
+        }
+
+        .feature-card {
+            margin-bottom: 0.75rem;
+        }
+    }
+</style>
+
+<div class="welcome-wrapper">
+    <div class="welcome-content">
+        <h1 class="welcome-title">Welcome to DIY Blog</h1>
+        <p class="welcome-description">Share your thoughts, connect with others, and explore amazing content.</p>
+    </div>
+</div>
+
+<div class="container">
+    <div class="features-section">
+        <div class="row g-4">
+            <!-- Latest Posts -->
+            <div class="col-md-4">
+                <div class="feature-card">
+                    <h2 class="h3 feature-title">Latest Posts</h2>
+                    <p class="feature-text">Explore our most recent blog posts from various authors.</p>
+                    <a href="{% url 'blog:all_blogs' %}" class="btn btn-outline-primary">View All Posts</a>
+                </div>
+            </div>
+
+            <!-- Our Bloggers -->
+            <div class="col-md-4">
+                <div class="feature-card">
+                    <h2 class="h3 feature-title">Our Bloggers</h2>
+                    <p class="feature-text">Meet our talented community of writers and content creators.</p>
+                    <a href="{% url 'blog:blogger_list' %}" class="btn btn-outline-primary">Meet Bloggers</a>
+                </div>
+            </div>
+
+            <!-- User Section -->
+            <div class="col-md-4">
+                <div class="feature-card">
+                    {% if user.is_authenticated %}
+                        <h2 class="h3 feature-title">Welcome, {{ user.username }}!</h2>
+                        <p class="feature-text">Ready to share your thoughts? Create a new post or manage your existing content.</p>
+                        <div class="d-grid gap-2">
+                            <a href="{% url 'blog:post_create' %}" class="btn btn-outline-primary mb-2">
+                                <i class="fas fa-pencil-alt me-2"></i>Create New Post
+                            </a>
+                            <a href="{% url 'blog:profile_view' user.username %}" class="btn btn-outline-primary">
+                                <i class="fas fa-user me-2"></i>View Your Profile
+                            </a>
+                        </div>
+                    {% else %}
+                        <h2 class="h3 feature-title">Join Us</h2>
+                        <p class="feature-text">Create an account to start sharing your own stories.</p>
+                        <a href="{% url 'blog:register' %}" class="btn btn-outline-primary">Register Now</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

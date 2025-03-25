@@ -1,0 +1,346 @@
+{% extends "blog/base.html" %}
+
+{% block title %}{{ category.name }} - Posts{% endblock %}
+
+{% block content %}
+<style>
+    :root {
+        --primary-color: #2d3436;
+        --accent-color: #b19072;
+        --bg-color: #f5f0eb;
+        --card-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+    }
+    
+    .category-detail-section {
+        padding: 1.5rem 1rem;
+        background: linear-gradient(135deg, #f5f0eb 0%, #fff 100%);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .category-detail-section::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 200px;
+        background: linear-gradient(135deg, var(--primary-color) 0%, #3F4E4F 100%);
+        border-bottom-left-radius: 50% 15%;
+        border-bottom-right-radius: 50% 15%;
+        transform: scaleX(1.2);
+        z-index: 0;
+    }
+    
+    .back-button {
+        position: relative;
+        z-index: 1;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        padding: 0.4rem 1rem;
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 15px;
+        color: white;
+        text-decoration: none;
+        font-size: 0.875rem;
+        transition: all 0.3s ease;
+        margin-bottom: 1.5rem;
+    }
+    
+    .back-button:hover {
+        background: var(--accent-color);
+        border-color: var(--accent-color);
+        transform: translateX(-5px);
+    }
+    
+    .category-header {
+        position: relative;
+        z-index: 1;
+        text-align: center;
+        margin-bottom: 2rem;
+        color: white;
+    }
+
+    .category-header-icon {
+        width: 60px;
+        height: 60px;
+        background: var(--accent-color);
+        border-radius: 18px;
+        margin: 0 auto 1rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        color: white;
+        box-shadow: 0 6px 18px rgba(177, 144, 114, 0.3);
+    }
+    
+    .category-title {
+        font-size: 2rem;
+        font-weight: 800;
+        margin-bottom: 0.75rem;
+        background: linear-gradient(45deg, #fff, #f5f0eb);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        font-family: 'Playfair Display', serif;
+    }
+    
+    .category-description {
+        color: #3F4E4F;
+        font-size: 1rem;
+        margin: 0 auto;
+        max-width: 500px;
+        line-height: 1.5;
+        background: rgba(255, 255, 255, 0.95);
+        padding: 0.75rem 1.25rem;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+    
+    .posts-grid {
+        position: relative;
+        z-index: 1;
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        gap: 1rem;
+        margin-top: 1.5rem;
+    }
+    
+    .post-card {
+        background: white;
+        border-radius: 12px;
+        box-shadow: var(--card-shadow);
+        transition: all 0.3s ease;
+        border: 1px solid rgba(0, 0, 0, 0.05);
+        overflow: hidden;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .post-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+    }
+    
+    .post-header {
+        padding: 1.25rem;
+        border-bottom: 1px solid #dee2e6;
+        background-color: var(--primary-color);
+        color: white;
+    }
+    
+    .post-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin: 0;
+        line-height: 1.4;
+    }
+    
+    .post-title a {
+        color: white;
+        text-decoration: none;
+        transition: color 0.3s ease;
+    }
+    
+    .post-title a:hover {
+        color: var(--accent-color);
+    }
+    
+    .post-meta {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        margin-top: 0.75rem;
+        font-size: 0.875rem;
+        color: rgba(255, 255, 255, 0.8);
+    }
+    
+    .post-meta img {
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 2px solid rgba(255, 255, 255, 0.2);
+    }
+    
+    .post-content {
+        padding: 1.25rem;
+        flex-grow: 1;
+        background: white;
+    }
+    
+    .post-excerpt {
+        color: #666;
+        font-size: 0.875rem;
+        line-height: 1.5;
+        margin: 0;
+    }
+    
+    .post-footer {
+        padding: 0.75rem 1.25rem;
+        background: var(--bg-color);
+        border-top: 1px solid #dee2e6;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .post-stats {
+        display: flex;
+        gap: 0.75rem;
+    }
+    
+    .stat-badge {
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+        padding: 0.3rem 0.6rem;
+        background: white;
+        border-radius: 15px;
+        font-size: 0.8rem;
+        color: var(--accent-color);
+    }
+    
+    .read-more-btn {
+        padding: 0.4rem 0.8rem;
+        background: var(--accent-color);
+        color: white;
+        border-radius: 15px;
+        text-decoration: none;
+        font-size: 0.875rem;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+    }
+    
+    .read-more-btn:hover {
+        background: var(--primary-color);
+        color: white;
+        transform: translateX(5px);
+    }
+
+    .empty-state {
+        position: relative;
+        z-index: 1;
+        text-align: center;
+        padding: 3rem;
+        background: white;
+        border-radius: 15px;
+        margin: 2rem auto;
+        max-width: 500px;
+        box-shadow: var(--card-shadow);
+    }
+    
+    .empty-state i {
+        font-size: 3rem;
+        color: var(--accent-color);
+        margin-bottom: 1rem;
+        opacity: 0.5;
+    }
+    
+    .empty-state-text {
+        color: #666;
+        font-size: 1.1rem;
+        margin: 0;
+    }
+
+    @media (max-width: 768px) {
+        .category-detail-section {
+            padding: 1rem;
+        }
+        
+        .category-title {
+            font-size: 1.75rem;
+        }
+        
+        .category-description {
+            font-size: 0.875rem;
+            padding: 0 0.5rem;
+        }
+        
+        .posts-grid {
+            grid-template-columns: 1fr;
+            gap: 1rem;
+        }
+    }
+</style>
+
+<div class="category-detail-section">
+    <a href="{% url 'blog:category_list' %}" class="back-button">
+        <i class="fas fa-arrow-left"></i>
+        Back to Categories
+    </a>
+    
+    <div class="category-header">
+        <div class="category-header-icon">
+            {% if category.name == "Travel & Adventure" %}
+                <i class="fas fa-plane"></i>
+            {% elif category.name == "Fashion & Beauty" %}
+                <i class="fas fa-tshirt"></i>
+            {% elif category.name == "Home & DIY" %}
+                <i class="fas fa-home"></i>
+            {% elif category.name == "Sports & Fitness" %}
+                <i class="fas fa-dumbbell"></i>
+            {% elif category.name == "Technology & Gadgets" %}
+                <i class="fas fa-laptop"></i>
+            {% elif category.name == "Health & Wellness" %}
+                <i class="fas fa-heartbeat"></i>
+            {% else %}
+                <i class="fas fa-folder"></i>
+            {% endif %}
+        </div>
+        <h1 class="category-title">{{ category.name }}</h1>
+        <p class="category-description">{{ category.description|default:"Explore interesting posts in this category." }}</p>
+    </div>
+    
+    {% if posts %}
+        <div class="posts-grid">
+            {% for post in posts %}
+                <div class="post-card">
+                    <div class="post-header">
+                        <h2 class="post-title">
+                            <a href="{% url 'blog:post_detail' post.pk %}">{{ post.title }}</a>
+                        </h2>
+                        <div class="post-meta">
+                            <img src="{{ post.author.profile.profile_pic.url }}" 
+                                 alt="{{ post.author.username }}" 
+                                 class="rounded-circle">
+                            <span>By {{ post.author.username }}</span>
+                            <span>•</span>
+                            <span>{{ post.post_date|date:"F j, Y" }}</span>
+                        </div>
+                    </div>
+                    <div class="post-content">
+                        <p class="post-excerpt">{{ post.content|truncatewords:30 }}</p>
+                    </div>
+                    <div class="post-footer">
+                        <div class="post-stats">
+                            <span class="stat-badge">
+                                <i class="fas fa-thumbs-up"></i>
+                                {{ post.total_likes }}
+                            </span>
+                            <span class="stat-badge">
+                                <i class="fas fa-comments"></i>
+                                {{ post.comments.count }}
+                            </span>
+                        </div>
+                        <a href="{% url 'blog:post_detail' post.pk %}" class="read-more-btn">
+                            Read More <i class="fas fa-arrow-right"></i>
+                        </a>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="empty-state">
+            <i class="fas fa-file-alt"></i>
+            <p class="empty-state-text">No posts found in this category.</p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %} 

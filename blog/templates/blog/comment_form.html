@@ -1,0 +1,15 @@
+{% extends 'blog/base.html' %}
+
+{% block title %}Add Comment{% endblock %}
+
+{% block content %}
+<h2>Post your comment for: <a href="{% url 'blog:blog_detail' post.slug %}">{{ post.title }}</a></h2>
+
+<form method="post">
+    {% csrf_token %}
+    <p>
+        <textarea name="content" cols="40" rows="10" placeholder="Enter comment about blog here.">{% if form.content.value %}{{ form.content.value }}{% endif %}</textarea>
+    </p>
+    <input type="submit" value="Submit">
+</form>
+{% endblock %} 

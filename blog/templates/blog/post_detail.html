@@ -1,0 +1,443 @@
+{% extends "blog/base.html" %}
+
+{% block title %}{{ post.title }}{% endblock %}
+
+{% block content %}
+<style>
+    :root {
+        --gradient-start: #2d3436;
+        --gradient-end: #3F4E4F;
+        --blue-like: #007BFF;
+        --red-dislike: #DC3545;
+        --accent: #b19072;
+        --text-color: #2C3639;
+        --bg-light: #F8F9FA;
+    }
+
+    .post-container {
+        background: white;
+        padding: 1.5rem;
+        border-radius: 12px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        margin-top: 1rem;
+        position: relative;
+    }
+
+    .post-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .three-dots {
+        font-size: 1.5rem;
+        cursor: pointer;
+        padding: 5px;
+        transition: 0.3s ease;
+    }
+
+    .three-dots:hover {
+        color: var(--accent);
+    }
+
+    .dropdown {
+        position: relative;
+        display: inline-block;
+    }
+
+    .dropdown-content {
+        display: none;
+        position: absolute;
+        right: 0;
+        top: 100%;
+        background: white;
+        border-radius: 6px;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+        min-width: 120px;
+        padding: 0.5rem 0;
+        z-index: 1000;
+    }
+
+    .dropdown:hover .dropdown-content {
+        display: block;
+    }
+
+    .like-dislike {
+        display: flex;
+        gap: 1rem;
+        margin-top: 1rem;
+    }
+
+    .like-dislike button {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.4rem;
+        padding: 0.6rem 1.2rem;
+        border-radius: 50px;
+        border: none;
+        font-size: 0.9rem;
+        transition: 0.3s ease;
+        cursor: pointer;
+        background: #E0E0E0;
+        color: #444;
+        outline: none;
+    }
+
+    .btn-like:hover, .btn-like.active {
+        background: var(--blue-like);
+        color: white;
+    }
+
+    .btn-dislike:hover, .btn-dislike.active {
+        background: var(--red-dislike);
+        color: white;
+    }
+
+    .comments-section {
+        margin-top: 2rem;
+        background: var(--bg-light);
+        padding: 1.5rem;
+        border-radius: 12px;
+    }
+
+    .comment-card {
+        background: white;
+        padding: 1rem;
+        border-radius: 10px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        margin-bottom: 0.75rem;
+        position: relative;
+    }
+
+    .reply-section {
+        margin-left: 30px;
+        margin-top: 1rem;
+        border-left: 2px solid var(--accent);
+        padding-left: 1rem;
+    }
+
+    .comment-actions {
+        display: flex;
+        gap: 0.5rem;
+        font-size: 0.85rem;
+        color: var(--text-color);
+        cursor: pointer;
+    }
+
+    .reply-btn:hover, .delete-btn:hover {
+        color: var(--accent);
+    }
+
+    .reply-form {
+        display: none;
+        margin-top: 0.5rem;
+        padding: 1rem;
+        background: var(--bg-light);
+        border-radius: 8px;
+    }
+
+    .reply-form textarea {
+        width: 100%;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        padding: 0.75rem;
+        margin-bottom: 0.75rem;
+        resize: vertical;
+    }
+
+    .reply-form button {
+        background-color: var(--blue-like);
+        color: white;
+        border: none;
+        border-radius: 4px;
+        padding: 0.5rem 1rem;
+        cursor: pointer;
+        font-weight: 500;
+        transition: 0.3s;
+    }
+
+    .reply-form button:hover {
+        background-color: #0056b3;
+    }
+
+    .delete-btn {
+        color: var(--red-dislike);
+        cursor: pointer;
+    }
+
+    .comment-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 0.5rem;
+    }
+
+    .comment-author {
+        font-weight: 500;
+    }
+
+    .comment-date {
+        font-size: 0.8rem;
+        color: #666;
+    }
+
+    .comment-text {
+        margin-bottom: 0.5rem;
+    }
+</style>
+
+<div class="container">
+    <div class="post-container">
+        <div class="post-header">
+            <h1 class="post-title">{{ post.title }}</h1>
+            {% if request.user == post.author %}
+            <div class="dropdown">
+                <span class="three-dots">⋮</span>
+                <div class="dropdown-content">
+                    <a href="{% url 'blog:post_edit' post.pk %}">✏️ Edit</a>
+                    <a href="{% url 'blog:post_delete' post.pk %}" class="delete-btn">🗑 Delete</a>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="post-meta">
+            <span>By <strong>{{ post.author }}</strong></span>
+            <span>📅 {{ post.post_date|date:"F j, Y" }}</span>
+        </div>
+        <hr>
+        <p>{{ post.content|linebreaks }}</p>
+
+        <div class="like-dislike">
+            <button type="button" class="btn-like {% if user in post.likes.all %}active{% endif %}" onclick="handleLike('{{ post.pk }}')">
+                👍 <span>{{ post.likes.count }}</span>
+            </button>
+            <button type="button" class="btn-dislike {% if user in post.dislikes.all %}active{% endif %}" onclick="handleDislike('{{ post.pk }}')">
+                👎 <span>{{ post.dislikes.count }}</span>
+            </button>
+        </div>
+    </div>
+
+    <div class="comments-section">
+        <h2>Comments</h2>
+        {% if user.is_authenticated %}
+        <form method="post" action="{% url 'blog:add_comment' post.pk %}" id="commentForm">
+            {% csrf_token %}
+            <textarea name="content" class="form-control mb-2" placeholder="Write a comment..." required></textarea>
+            <button type="submit" class="btn btn-primary">Post Comment</button>
+        </form>
+        {% else %}
+        <p><a href="{% url 'login' %}">Login</a> to add a comment.</p>
+        {% endif %}
+
+        <div id="commentSection">
+            {% for comment in post.comments.all %}
+            <div class="comment-card" id="comment-{{ comment.pk }}">
+                <div class="comment-header">
+                    <div class="comment-author"><strong>{{ comment.author }}</strong></div>
+                    <div class="comment-date">{{ comment.created_date|date:"F j, Y" }}</div>
+                </div>
+                <div class="comment-text">{{ comment.content }}</div>
+                <div class="comment-actions">
+                    <span class="reply-btn" data-comment-id="{{ comment.pk }}">↩ Reply</span>
+                    {% if request.user == comment.author %}
+                    <span class="delete-btn" onclick="deleteComment('{{ comment.pk }}')">🗑 Delete</span>
+                    {% endif %}
+                </div>
+
+                <form method="post" action="{% url 'blog:add_reply' comment.pk %}" class="reply-form" id="reply-form-{{ comment.pk }}">
+                    {% csrf_token %}
+                    <textarea name="content" class="form-control" placeholder="Write a reply..." required></textarea>
+                    <button type="submit" class="reply-submit-btn">Submit Reply</button>
+                </form>
+
+                <div class="reply-section" id="replies-{{ comment.pk }}">
+                    {% for reply in comment.replies.all %}
+                    <div class="comment-card" id="comment-{{ reply.pk }}">
+                        <div class="comment-header">
+                            <div class="comment-author"><strong>{{ reply.author }}</strong></div>
+                            <div class="comment-date">{{ reply.created_date|date:"F j, Y" }}</div>
+                        </div>
+                        <div class="comment-text">{{ reply.content }}</div>
+                        {% if request.user == reply.author %}
+                        <div class="comment-actions">
+                            <span class="delete-btn" onclick="deleteComment('{{ reply.pk }}')">🗑 Delete</span>
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% empty %}
+            <p>No comments yet. Be the first to comment!</p>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<script>
+    // Toggle reply form visibility
+    document.querySelectorAll(".reply-btn").forEach(button => {
+        button.addEventListener("click", function () {
+            let commentId = this.getAttribute("data-comment-id");
+            let form = document.getElementById("reply-form-" + commentId);
+            form.style.display = (form.style.display === "block") ? "none" : "block";
+            
+            // Scroll to the reply form
+            if (form.style.display === "block") {
+                form.scrollIntoView({ behavior: "smooth", block: "nearest" });
+                form.querySelector("textarea").focus();
+            }
+        });
+    });
+
+    // Handle reply form submission
+    document.querySelectorAll(".reply-form").forEach(form => {
+        form.addEventListener("submit", function(e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            const commentId = this.id.split("-")[2];
+            
+            fetch(this.action, {
+                method: "POST",
+                body: formData,
+                headers: {
+                    "X-CSRFToken": "{{ csrf_token }}",
+                    "X-Requested-With": "XMLHttpRequest"
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    // Add the new reply to the page
+                    const repliesSection = document.getElementById("replies-" + commentId);
+                    const newReply = document.createElement("div");
+                    newReply.className = "comment-card";
+                    newReply.id = "comment-" + data.id;  // Add ID to the reply element
+                    
+                    // Add delete button if the reply is from the current user
+                    const deleteButton = `
+                        <div class="comment-actions">
+                            <span class="delete-btn" onclick="deleteComment('${data.id}')">🗑 Delete</span>
+                        </div>
+                    `;
+                    
+                    newReply.innerHTML = `
+                        <div class="comment-header">
+                            <div class="comment-author"><strong>${data.author}</strong></div>
+                            <div class="comment-date">${data.date}</div>
+                        </div>
+                        <div class="comment-text">${data.content}</div>
+                        ${deleteButton}
+                    `;
+                    
+                    repliesSection.appendChild(newReply);
+                    
+                    // Reset and hide the form
+                    this.reset();
+                    this.style.display = "none";
+                }
+            })
+            .catch(error => {
+                console.error("Error:", error);
+                alert("There was a problem submitting your reply. Please try again.");
+            });
+        });
+    });
+
+    function handleLike(postId) {
+        fetch(`/post/${postId}/like/`, { 
+            method: "POST", 
+            headers: { 
+                "X-CSRFToken": "{{ csrf_token }}"
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            // Update like count
+            document.querySelector(".btn-like span").textContent = data.likes_count;
+            document.querySelector(".btn-dislike span").textContent = data.dislikes_count;
+            
+            // Toggle active class
+            if (data.liked) {
+                document.querySelector(".btn-like").classList.add("active");
+                document.querySelector(".btn-dislike").classList.remove("active");
+            } else {
+                document.querySelector(".btn-like").classList.remove("active");
+            }
+        })
+        .catch(error => console.error("Error:", error));
+    }
+
+    function handleDislike(postId) {
+        fetch(`/post/${postId}/dislike/`, { 
+            method: "POST", 
+            headers: { 
+                "X-CSRFToken": "{{ csrf_token }}"
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            // Update dislike count
+            document.querySelector(".btn-like span").textContent = data.likes_count;
+            document.querySelector(".btn-dislike span").textContent = data.dislikes_count;
+            
+            // Toggle active class
+            if (data.disliked) {
+                document.querySelector(".btn-dislike").classList.add("active");
+                document.querySelector(".btn-like").classList.remove("active");
+            } else {
+                document.querySelector(".btn-dislike").classList.remove("active");
+            }
+        })
+        .catch(error => console.error("Error:", error));
+    }
+
+    function deleteComment(commentId) {
+        if (confirm('Are you sure you want to delete this comment?')) {
+            const url = `/comment/${commentId}/delete/`;
+            
+            // Use a simplified fetch with CSRF protection
+            fetch(url, {
+                method: "POST",
+                headers: {
+                    "X-CSRFToken": "{{ csrf_token }}",
+                    "X-Requested-With": "XMLHttpRequest",
+                    "Content-Type": "application/json"
+                },
+                credentials: 'same-origin'
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`Server error: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    // Find and remove the comment element
+                    const elementToRemove = document.getElementById(`comment-${commentId}`);
+                    if (elementToRemove) {
+                        elementToRemove.remove();
+                    } else {
+                        console.error("Element not found: comment-" + commentId);
+                    }
+                } else {
+                    alert(data.message || 'Error deleting comment');
+                }
+            })
+            .catch(error => {
+                console.error("Error:", error);
+                alert("There was a problem deleting the comment. Please try again.");
+            });
+        }
+    }
+</script>
+
+{% endblock %}
